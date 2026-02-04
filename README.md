@@ -1,14 +1,36 @@
-# ComfyUI ACE15 Tiled Decode Audio
+ACE15_TiledDecodeAudio
+A high-performance, memory-efficient Tiled Audio Decoding node for ComfyUI. This node is specifically designed to handle long-duration audio latent samples that would otherwise exceed VRAM limits during VAE/Vocoder decoding.
 
-This node provides high-quality Audio Super Resolution (SR) for ComfyUI, powered by **FlashSR**. It features a **Tiled Processing** mechanism to handle long audio files without running out of VRAM.
+🚀 Key Features & Implementation Logic
+1. Dynamic Hop-length Detection
+Unlike standard decoders that rely on hardcoded values, this node implements an Auto-Precision Calibration logic.
 
-## Features
-- **Tiled Inference**: Automatically splits audio into chunks (245760 samples) to ensure stable U-Net alignment and low VRAM usage.
-- **High Fidelity**: Supports upsampling to 44.1kHz and 48kHz.
-- **Clean Logs**: Suppressed unnecessary library outputs for a cleaner ComfyUI console.
+The Method: It performs two micro-decodes of different temporal lengths to mathematically calculate the exact hop_length of the loaded model.
 
-## Installation
+The Result: Seamless compatibility with various HiFi-GAN and Audio VAE architectures without manual user configuration.
 
-1. Clone this repo to `custom_nodes`:
-   ```bash
-   git clone [https://github.com/klossm/ACE15_TiledDecodeAudio.git](https://github.com/klossm/ACE15_TiledDecodeAudio.git)
+2. Tiled Processing with Linear Crossfading
+To process extremely long audio files:
+
+Tiling: The Latent space is processed in segments defined by tile_size.
+
+Seamless Blending: Uses a weight_mask and torch.linspace window to perform linear crossfading between overlapping chunks. This eliminates "clicking" or "popping" artifacts at the segment boundaries.
+
+Normalization: Every sample is normalized by the accumulated weight mask to ensure consistent volume across the entire waveform.
+
+3. Smart Fallback & Robustness
+Automatic Pathing: Includes a robust import system that searches for music_vocoder dependencies within the ComfyUI directory structure.
+
+VRAM Optimization: Forces evaluation mode and automatically cleans the CUDA cache after processing to keep your workflow smooth.
+
+
+🛠️ Installation
+Navigate to your ComfyUI custom_nodes folder:
+
+Bash
+cd ComfyUI/custom_nodes/
+Clone the repository:
+
+Bash
+git clone https://github.com/klossm/ACE15_TiledDecodeAudio.git
+Restart ComfyUI.
