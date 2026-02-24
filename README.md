@@ -1,28 +1,24 @@
-ACE15_TiledDecodeAudio
-A high-performance, memory-efficient Tiled Audio Decoding node for ComfyUI. This node is specifically designed to handle long-duration audio latent samples that would otherwise exceed VRAM limits during VAE/Vocoder decoding.
+ACE15_TiledDecodeAudio (Updated)
+A high-performance, memory-efficient 48kHz Tiled Audio Decoding node for ComfyUI. This node is specifically designed to handle long-duration audio latent samples by processing them in overlapping tiles, preventing VRAM out-of-memory (OOM) errors during VAE/Vocoder decoding.
 
 🚀 Key Features & Implementation Logic
-1. Dynamic Hop-length Detection
-Unlike standard decoders that rely on hardcoded values, this node implements an Auto-Precision Calibration logic.
+48kHz High-Fidelity Support: Optimized for high-resolution audio. The decoding pipeline is now strictly aligned with a 48000Hz sample rate for professional-grade output.
 
-The Method: It performs two micro-decodes of different temporal lengths to mathematically calculate the exact hop_length of the loaded model.
+Intelligent Tiled Processing:
 
-The Result: Seamless compatibility with various HiFi-GAN and Audio VAE architectures without manual user configuration.
+Auto-Alignment: Automatically aligns tile_size and overlap with internal CNN downsampling ratios (multiples of 64/32) to ensure seamless state transitions between blocks.
 
-2. Tiled Processing with Linear Crossfading
-To process extremely long audio files:
+Boundary Smoothing: Implements a 50ms temporal fade-out at the end of the waveform to eliminate DC offset and clipping artifacts.
 
-Tiling: The Latent space is processed in segments defined by tile_size.
+Advanced Audio Post-Processing:
 
-Seamless Blending: Uses a weight_mask and torch.linspace window to perform linear crossfading between overlapping chunks. This eliminates "clicking" or "popping" artifacts at the segment boundaries.
+Stereo Width Control: Adjusts the Mid/Side (M/S) balance to enhance or narrow the soundstage (Default: 1.15x for subtle enhancement).
 
-Normalization: Every sample is normalized by the accumulated weight mask to ensure consistent volume across the entire waveform.
+HF Smoothing (Air-band): A specialized 15.5kHz treble biquad filter with a gentle Q-factor to polish the "air" frequencies and reduce digital harshness.
 
-3. Smart Fallback & Robustness
-Automatic Pathing: Includes a robust import system that searches for music_vocoder dependencies within the ComfyUI directory structure.
+Adaptive Normalization: Uses a smart target-standard-deviation scaling (0.18) and final peak limiting (0.95) to ensure consistent loudness without clipping.
 
-VRAM Optimization: Forces evaluation mode and automatically cleans the CUDA cache after processing to keep your workflow smooth.
-
+VRAM Efficiency: Features automatic model offloading to the intermediate device and active garbage collection (gc.collect) to keep ComfyUI running smoothly.
 
 🛠️ Installation
 Navigate to your ComfyUI custom_nodes folder:
